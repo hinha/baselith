@@ -8,6 +8,9 @@
 *.so
 *.dylib
 
+# Binary output
+baselith
+
 # Test binary, built with `go test -c`
 *.test
 

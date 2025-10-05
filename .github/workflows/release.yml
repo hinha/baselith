@@ -1,0 +1,73 @@
+name: Release Build and Test
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-and-test:
+    name: Build and Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            artifact_name: baselith-linux-amd64
+            binary_name: baselith-linux-amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            artifact_name: baselith-darwin-amd64
+            binary_name: baselith-darwin-amd64
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+            artifact_name: baselith-windows-amd64.exe
+            binary_name: baselith-windows-amd64.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: go build -o ${{ matrix.artifact_name }} .
+
+      - name: Run tests
+        run: go test ./... -v
+
+      - name: Test binary execution (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x ${{ matrix.binary_name }}
+          ./${{ matrix.binary_name }} version
+          ./${{ matrix.binary_name }} greet -n "Release Test"
+
+      - name: Test binary execution (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          .\${{ matrix.binary_name }} version
+          .\${{ matrix.binary_name }} greet -n "Release Test"
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.artifact_name }}
+          asset_content_type: application/octet-stream
