@@ -47,7 +47,7 @@ func ExampleUsage() {
 	factory := persistence.NewConnectorFactory()
 
 	// Connect to MySQL
-	_, err = factory.Connect(mysqlConfig)
+	_, err = factory.CreateConnector(mysqlConfig)
 	if err != nil {
 		log.Printf("Failed to connect to MySQL: %v", err)
 	} else {
@@ -55,7 +55,7 @@ func ExampleUsage() {
 	}
 
 	// Connect to PostgreSQL
-	_, err = factory.Connect(postgresConfig)
+	_, err = factory.CreateConnector(postgresConfig)
 	if err != nil {
 		log.Printf("Failed to connect to PostgreSQL: %v", err)
 	} else {

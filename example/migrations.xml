@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<migrations version="1">
+    <changeLog id="001_create_table_user"
+               kind="sql"
+               author="martin"
+               labels="create_table_user"
+               transactional="true">
+        <include file="./changeset/001_create_table_user.sql" relativeToChangelogFile="true" />
+        <includeDown file="./changeset/001_create_table_user.down.sql" relativeToChangelogFile="true"/>
+    </changeLog>
+</migrations>

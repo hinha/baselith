@@ -47,7 +47,7 @@ Check the version:
 
 Execute the full migration to latest version:
 ```bash
-./baselith --host=localhost --port=5432 --user=user --password=password --dbname=postgres --schema=public --driver=postgresql
+./baselith --host=localhost --port=5432 --user=user --password=password --dbname=postgres --schema=public --driver=postgresql --sub=up
 ```
 
 Migration subcommands (default: "up"):
@@ -60,12 +60,12 @@ Migration subcommands (default: "up"):
 
 Execute migrations with PostgreSQL:
 ```bash
-./baselith --host=localhost --port=5432 --user=user --password=password --dbname=postgres --schema=public --driver=postgresql
+./baselith --host=localhost --port=5432 --user=user --password=password --dbname=postgres --schema=public --driver=postgresql --sub=up
 ```
 
 Execute migrations with MySQL:
 ```bash
-./baselith --host=localhost --port=3306 --user=user --password=password --dbname=mydb --driver=mysql
+./baselith --host=localhost --port=3306 --user=user --password=password --dbname=mydb --driver=mysql --sub=up
 ```
 
 Use YAML configuration file:
