@@ -11,6 +11,7 @@ import (
 // MySQLConnector implements DBConnector for MySQL database
 type MySQLConnector struct {
 	*BaseConnector
+	db *gorm.DB
 }
 
 // NewMySQLConnector creates a new MySQL connector with the given config
@@ -57,6 +58,7 @@ func (mc *MySQLConnector) Connect() (*gorm.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to MySQL database: %w", err)
 	}
+	mc.db = db
 
 	// Configure connection pool
 	sqlDB, err := db.DB()
@@ -70,4 +72,16 @@ func (mc *MySQLConnector) Connect() (*gorm.DB, error) {
 	sqlDB.SetConnMaxLifetime(mc.config.ConnMaxLifetime)
 
 	return db, nil
+}
+
+// Close closes the database connection
+func (mc *MySQLConnector) Close() error {
+	if mc.db != nil {
+		sqlDB, err := mc.db.DB()
+		if err != nil {
+			return fmt.Errorf("failed to get underlying *sql.DB: %v", err)
+		}
+		return sqlDB.Close()
+	}
+	return nil
 }

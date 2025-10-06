@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"fmt"
+
 	"gorm.io/gorm"
 )
 
@@ -13,7 +14,7 @@ func NewConnectorFactory() *ConnectorFactory {
 	return &ConnectorFactory{}
 }
 
-// CreateConnector creates a new database connector based on the driver specified in the config
+// CreateConnector creates a new database connector based on the driver
 func (cf *ConnectorFactory) CreateConnector(config *DBConfig) (DBConnector, error) {
 	switch config.Driver {
 	case "mysql":

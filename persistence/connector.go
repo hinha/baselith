@@ -1,15 +1,5 @@
 package persistence
 
-import (
-	"gorm.io/gorm"
-)
-
-// DBConnector defines the interface for database connectors
-type DBConnector interface {
-	Connect() (*gorm.DB, error)
-	GetConfig() *DBConfig
-}
-
 // BaseConnector provides common functionality for database connectors
 type BaseConnector struct {
 	config *DBConfig

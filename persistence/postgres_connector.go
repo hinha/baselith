@@ -11,6 +11,7 @@ import (
 // PostgresConnector implements DBConnector for PostgreSQL database
 type PostgresConnector struct {
 	*BaseConnector
+	db *gorm.DB
 }
 
 // NewPostgresConnector creates a new PostgreSQL connector with the given config
@@ -24,19 +25,20 @@ func NewPostgresConnector(config *DBConfig) *PostgresConnector {
 func (pc *PostgresConnector) Connect() (*gorm.DB, error) {
 	// Build connection string
 	var dsn string
-	// no required password
-	dsn = fmt.Sprintf("host=%s user=%s dbname=%s port=%d sslmode=%s",
-		pc.config.Host,
-		pc.config.Username,
-		pc.config.Database,
-		pc.config.Port,
-		pc.config.SSLMode,
-	)
 	if pc.config.Password != "" {
 		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s",
 			pc.config.Host,
 			pc.config.Username,
 			pc.config.Password,
+			pc.config.Database,
+			pc.config.Port,
+			pc.config.SSLMode,
+		)
+	} else {
+		// no required password
+		dsn = fmt.Sprintf("host=%s user=%s dbname=%s port=%d sslmode=%s",
+			pc.config.Host,
+			pc.config.Username,
 			pc.config.Database,
 			pc.config.Port,
 			pc.config.SSLMode,
@@ -52,19 +54,21 @@ func (pc *PostgresConnector) Connect() (*gorm.DB, error) {
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to PostgreSQL database: %w", err)
+		return nil, fmt.Errorf("failed to connect to PostgreSQL: %v", err)
 	}
 
-	// Configure connection pool
-	sqlDB, err := db.DB()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get database instance: %w", err)
-	}
-
-	// Set connection pool settings
-	sqlDB.SetMaxIdleConns(pc.config.MaxIdleConns)
-	sqlDB.SetMaxOpenConns(pc.config.MaxOpenConns)
-	sqlDB.SetConnMaxLifetime(pc.config.ConnMaxLifetime)
-
+	pc.db = db
 	return db, nil
+}
+
+// Close closes the database connection
+func (pc *PostgresConnector) Close() error {
+	if pc.db != nil {
+		sqlDB, err := pc.db.DB()
+		if err != nil {
+			return fmt.Errorf("failed to get underlying *sql.DB: %v", err)
+		}
+		return sqlDB.Close()
+	}
+	return nil
 }
