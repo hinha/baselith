@@ -1,13 +1,14 @@
 # baselith
 
-A cross-platform command-line application built with Go and Cobra that works on Linux, macOS, and Windows.
+Baselith is a cross-platform command-line database migration management tool built with Go and Cobra. It works on Linux, macOS, and Windows, and provides a unified approach to managing database schema changes across different database systems.
 
 ## Features
 
 - Cross-platform support (Linux, macOS, Windows)
-- Built with [Cobra](https://github.com/spf13/cobra) CLI framework
-- Automated testing and building via GitHub Actions
-- Example commands demonstrating CLI functionality
+- Database migration management for PostgreSQL and MySQL
+- Support for both transactional and non-transactional migrations
+- XML-based migration configuration
+- Support for both direct database connection parameters and YAML configuration files
 
 ## Installation
 
@@ -21,7 +22,7 @@ cd baselith
 
 2. Build the application:
 ```bash
-go build -o baselith .
+cd cmd && go build -o baselith .
 ```
 
 ### From Release
@@ -42,71 +43,76 @@ Check the version:
 ./baselith version
 ```
 
-Greet someone:
+### Database Migration Commands
+
+Execute the full migration to latest version:
 ```bash
-./baselith greet -n "World"
-# or
-./baselith greet --name "World"
+./baselith --host=localhost --port=5432 --user=user --password=password --dbname=postgres --schema=public --driver=postgresql --sub=up
+```
+
+Migration subcommands (default: "up"):
+- `up` - Run all pending migrations
+- `down` - Rollback the last migration or to a specified ID
+- `to` - Migrate to a specific migration ID
+- `redo` - Rollback and re-apply the latest migration
+
+### Example Usage
+
+Execute migrations with PostgreSQL:
+```bash
+./baselith --host=localhost --port=5432 --user=user --password=password --dbname=postgres --schema=public --driver=postgresql --sub=up
+```
+
+Execute migrations with MySQL:
+```bash
+./baselith --host=localhost --port=3306 --user=user --password=password --dbname=mydb --driver=mysql --sub=up
+```
+
+Use YAML configuration file:
+```bash
+./baselith --config=path/to/config.yaml
+```
+
+Specify migration subcommand:
+```bash
+./baselith --host=localhost --port=5432 --user=user --password=password --dbname=postgres --schema=public --driver=postgresql --s=down
+```
+
+Migrate to a specific version:
+```bash
+./baselith --host=localhost --port=5432 --user=user --password=password --dbname=postgres --schema=public --driver=postgresql --s=to --to=002
 ```
 
 Get help:
 ```bash
 ./baselith --help
-./baselith greet --help
 ```
 
-## Development
+## Configuration
 
-### Running Tests
+Baselith supports configuration via command-line flags or YAML file. Database connection parameters include:
 
-```bash
-go test ./... -v
-```
+- `--driver` - Database driver (postgres, mysql, etc.) [default: "postgres"]
+- `--host` - Database host [default: "localhost"]
+- `--port` - Database port [default: 5432]
+- `--dbname` - Database name
+- `--user` - Database user
+- `--password` - Database password
+- `--schema` - Database schema (for PostgreSQL) [default: "public"]
+- `--s` - Subcommand to execute: up, down, to, redo [default: "up"]
+- `--to` - Target migration ID for 'to' or 'down' subcommands
+- `--config` - Path to configuration file
+- `--yaml` - Output YAML configuration
 
-### Building for Different Platforms
+## Migration Files
 
-Linux:
-```bash
-GOOS=linux GOARCH=amd64 go build -o baselith-linux-amd64 .
-```
+Baselith uses XML-based migration files where you can define:
 
-macOS:
-```bash
-GOOS=darwin GOARCH=amd64 go build -o baselith-darwin-amd64 .
-```
+- SQL migrations with up/down scripts
+- Transactional and non-transactional migrations
+- Metadata including author, labels, and migration types
+- Sequential migration IDs for ordered execution
 
-Windows:
-```bash
-GOOS=windows GOARCH=amd64 go build -o baselith-windows-amd64.exe .
-```
-
-## GitHub Actions
-
-This project includes two GitHub Actions workflows:
-
-1. **PR Workflow** (`.github/workflows/pr.yml`): 
-   - Runs on pull requests to the main branch
-   - Executes unit tests
-   - Builds the application for Linux, macOS, and Windows
-   - Uploads build artifacts
-
-2. **Release Workflow** (`.github/workflows/release.yml`):
-   - Runs when a new release is created
-   - Builds the application for all platforms
-   - Runs tests on each platform
-   - Executes the binary to verify functionality
-   - Uploads release assets
-
-## Branch Protection
-
-To enable branch protection for the main branch:
-
-1. Go to repository Settings → Branches
-2. Add a branch protection rule for `main`
-3. Enable "Require a pull request before merging"
-4. Set "Required number of approvals before merging" to at least 1
-5. Enable "Require status checks to pass before merging"
-6. Select the status checks from the PR workflow
 
 ## License
 
