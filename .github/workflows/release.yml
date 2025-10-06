@@ -10,18 +10,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
         include:
           - os: ubuntu-latest
             goos: linux
             goarch: amd64
             artifact_name: baselith-linux-amd64
             binary_name: baselith-linux-amd64
-          - os: macos-latest
-            goos: darwin
-            goarch: amd64
-            artifact_name: baselith-darwin-amd64
-            binary_name: baselith-darwin-amd64
           - os: windows-latest
             goos: windows
             goarch: amd64
