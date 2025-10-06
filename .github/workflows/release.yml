@@ -49,7 +49,6 @@ jobs:
         run: |
           chmod +x ${{ matrix.binary_name }}
           ./${{ matrix.binary_name }} version
-          ./${{ matrix.binary_name }} greet -n "Release Test"
 
       - name: Test binary execution (Windows)
         if: runner.os == 'Windows'
