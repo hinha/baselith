@@ -2,6 +2,7 @@ package baselith
 
 import "github.com/spf13/cobra"
 
+// Command line arguments
 var (
 	ConfigYaml bool
 	ConfigPath string
