@@ -32,6 +32,6 @@ func ReadFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().StringVar(&User, "user", "", "Database user")
 	rootCmd.Flags().StringVar(&Password, "password", "", "Database password")
 	rootCmd.Flags().StringVar(&Schema, "schema", "public", "Database schema (for PostgreSQL)")
-	rootCmd.Flags().StringVar(&Sub, "s", "up", "Subcommand to execute: up, down, to, redo, history, status")
+	rootCmd.Flags().StringVar(&Sub, "sub", "up", "Subcommand to execute: up, down, to, redo, history, status")
 	rootCmd.Flags().StringVar(&ToID, "to", "", "Target migration ID for 'to' or 'down' subcommands")
 }

@@ -102,6 +102,14 @@ func Run(cmd *cobra.Command, _ []string) {
 
 	// command dispatcher
 	switch Sub {
+	case "status":
+		if err := cmdStatus(db, append(txMigs, notxMigs...)); err != nil {
+			log.Fatal(err)
+		}
+	case "history":
+		if err := cmdHistory(db); err != nil {
+			log.Fatal(err)
+		}
 	case "up", "down", "to", "redo":
 		if err := runMutations(db, Sub, ToID, txMigs, notxMigs, metasTx, metasNoTx, Schema); err != nil {
 			log.Fatal(err)

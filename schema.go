@@ -2,6 +2,16 @@ package baselith
 
 import (
 	"fmt"
+	"log"
+	"time"
+
+	"github.com/go-gormigrate/gormigrate/v2"
+	"gorm.io/gorm"
+)
+
+const (
+	sqlPostgresSchema = `SELECT * FROM %s.schema_migrations ORDER BY applied_at`
+	sqlMysqlSchema    = `SELECT * FROM schema_migrations ORDER BY applied_at DESC`
 )
 
 type Meta struct {
@@ -35,6 +45,11 @@ type xmlInclude struct {
 	Rel  string `xml:"relativeToChangelogFile,attr"` // "true"/"false"
 }
 
+type migRow struct {
+	ID        string
+	AppliedAt time.Time
+}
+
 func upsertMeta(db DBInterface, schema, id string, meta Meta) error {
 	result := db.Exec(
 		fmt.Sprintf(`UPDATE %s.schema_migrations
@@ -56,6 +71,70 @@ func syncMetadata(db DBInterface, schema string, metas map[string]Meta) error {
 	for id, meta := range metas {
 		if err := upsertMeta(db, schema, id, meta); err != nil {
 			return fmt.Errorf("failed to sync metadata for %q: %w", id, err)
+		}
+	}
+	return nil
+}
+
+func cmdHistory(db *gorm.DB) error {
+	var rows []migRow
+	if Driver == "postgres" || Driver == "postgresql" {
+		if err := db.Raw(fmt.Sprintf(sqlPostgresSchema, Schema)).
+			Scan(&rows).Error; err != nil {
+			return err
+		}
+	} else if Driver == "mysql" {
+		if err := db.Raw(sqlMysqlSchema).
+			Scan(&rows).Error; err != nil {
+			return err
+		}
+	}
+
+	log.Println("== Migration History ==")
+	for _, r := range rows {
+		fmt.Printf("%s\t%s\n", r.AppliedAt.Format(time.RFC3339), r.ID)
+	}
+	return nil
+}
+
+func cmdStatus(db *gorm.DB, all []*gormigrate.Migration) error {
+	var rows []migRow
+	if Driver == "postgres" || Driver == "postgresql" {
+		if err := db.Raw(fmt.Sprintf(sqlPostgresSchema, Schema)).
+			Scan(&rows).Error; err != nil {
+			return err
+		}
+	} else if Driver == "mysql" {
+		if err := db.Raw(sqlMysqlSchema).
+			Scan(&rows).Error; err != nil {
+			return err
+		}
+	}
+	applied := map[string]time.Time{}
+	for _, r := range rows {
+		applied[r.ID] = r.AppliedAt
+	}
+
+	log.Println("== Migration IsActive ==")
+	for _, gm := range all {
+		if t, ok := applied[gm.ID]; ok {
+			log.Printf("✓ %s\t(%s)\n", gm.ID, t.Format(time.RFC3339))
+		} else {
+			log.Printf("• %s\t(PENDING)\n", gm.ID)
+		}
+	}
+
+	// optional: info drift (ada di DB tapi tidak ada di XML)
+	for id := range applied {
+		found := false
+		for _, gm := range all {
+			if gm.ID == id {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Printf("! drift: applied but missing in XML -> %s\n", id)
 		}
 	}
 	return nil
