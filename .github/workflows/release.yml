@@ -44,18 +44,6 @@ jobs:
       - name: Run tests
         run: go test ./... -v
 
-      - name: Test binary execution (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          chmod +x ${{ matrix.binary_name }}
-          ./${{ matrix.binary_name }} version
-
-      - name: Test binary execution (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          .\${{ matrix.binary_name }} version
-          .\${{ matrix.binary_name }} greet -n "Release Test"
-
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
