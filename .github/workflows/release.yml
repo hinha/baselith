@@ -27,6 +27,14 @@ jobs:
             goos: windows
             goarch: amd64
             artifact_name: baselith-windows-amd64.exe
+          - os: macos-arm-latest
+            goos: darwin
+            goarch: arm64         
+            artifact_name: baselith-darwin-arm64
+          - os: macos-amd-latest
+            goos: darwin
+            goarch: amd64         
+            artifact_name: baselith-darwin-arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -53,7 +61,7 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 0
         run: |
-          go build -trimpath -ldflags "-s -w" -o "${{ matrix.artifact_name }}" "${{ steps.main.outputs.main_pkg }}"
+          go build -trimpath -ldflags "-s -w" -o "${{ matrix.artifact_name }}" ${{ steps.main.outputs.main_pkg }}
           chmod +x "${{ matrix.artifact_name }}" || true
           file "${{ matrix.artifact_name }}" || true
 
