@@ -13,28 +13,34 @@ defaults:
 
 jobs:
   build-and-test:
-    name: Build and Test on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Build and Test on ${{ matrix.runs_on }} → ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ${{ matrix.runs_on }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-arm-latest, macos-amd-latest]
         include:
-          - os: ubuntu-latest
+          # Linux (ELF)
+          - runs_on: ubuntu-latest
             goos: linux
             goarch: amd64
             artifact_name: baselith-linux-amd64
-          - os: windows-latest
+
+          # Windows (PE)
+          - runs_on: windows-latest
             goos: windows
             goarch: amd64
             artifact_name: baselith-windows-amd64.exe
-          - os: macos-arm-latest
+
+          # macOS (Mach-O, Apple Silicon native)
+          - runs_on: macos-14
             goos: darwin
-            goarch: arm64         
+            goarch: arm64
             artifact_name: baselith-darwin-arm64
-          - os: macos-amd-latest
+
+          # macOS (Mach-O, Intel/Rosetta target)
+          - runs_on: macos-14
             goos: darwin
-            goarch: amd64         
-            artifact_name: baselith-darwin-arm64
+            goarch: amd64
+            artifact_name: baselith-darwin-amd64
 
     steps:
       - uses: actions/checkout@v4
