@@ -7,8 +7,12 @@ on:
 permissions:
   contents: write
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  build:
+  build-and-test:
     name: Build and Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -19,12 +23,10 @@ jobs:
             goos: linux
             goarch: amd64
             artifact_name: baselith-linux-amd64
-            main_pkg: ./cmd/baselith
           - os: windows-latest
             goos: windows
             goarch: amd64
             artifact_name: baselith-windows-amd64.exe
-            main_pkg: ./cmd/baselith
 
     steps:
       - uses: actions/checkout@v4
@@ -33,15 +35,27 @@ jobs:
 
       - run: go mod download
 
+      - name: Detect main package
+        id: main
+        run: |
+          set -e
+          # Ambil direktori pertama yg bernama package main
+          MP=$(go list -f '{{if eq .Name "main"}}{{.Dir}}{{end}}' ./... | head -n1)
+          if [ -z "$MP" ]; then
+            echo "No package main found in repo."; exit 1
+          fi
+          echo "Found main package at: $MP"
+          echo "main_pkg=$MP" >> "$GITHUB_OUTPUT"
+
       - name: Build
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: 0
         run: |
-          go build -trimpath -ldflags "-s -w" -o ${{ matrix.artifact_name }} ${{ matrix.main_pkg }}
-          chmod +x ${{ matrix.artifact_name }}
-          file ${{ matrix.artifact_name }} || true
+          go build -trimpath -ldflags "-s -w" -o "${{ matrix.artifact_name }}" "${{ steps.main.outputs.main_pkg }}"
+          chmod +x "${{ matrix.artifact_name }}" || true
+          file "${{ matrix.artifact_name }}" || true
 
       - name: Run tests
         run: go test ./... -v
