@@ -61,6 +61,7 @@ func Run(cmd *cobra.Command, _ []string) {
 		log.Fatal(err)
 		return
 	}
+	Schema = doc.Schema
 	log.Printf("Base directory: %s\n", baseDir)
 
 	config, err := persistence.NewDBConfigBuilder().Driver(Driver).Host(Host).Port(Port).Database(Dbname).
@@ -68,13 +69,12 @@ func Run(cmd *cobra.Command, _ []string) {
 		Password(Password).
 		MaxIdleConns(10).
 		MaxOpenConns(100).
-		Schema(Schema).
+		Schema(doc.Schema).
 		ConnMaxLifetime(time.Hour).Build()
 	if err != nil {
 		log.Fatal("Failed to build config:", err)
 		return
 	}
-	Schema = config.Schema
 
 	factory := persistence.NewConnectorFactory()
 	connect, err := factory.CreateConnector(config)
