@@ -18,6 +18,7 @@ type DBConfig struct {
 	MaxOpenConns    int
 	ConnMaxLifetime time.Duration
 	Params          map[string]string
+	Schema          string // for postgres only
 }
 
 // DBConfigBuilder implements the builder pattern for DBConfig
@@ -105,6 +106,11 @@ func (b *DBConfigBuilder) AddParam(key, value string) *DBConfigBuilder {
 	return b
 }
 
+func (b *DBConfigBuilder) Schema(schema string) *DBConfigBuilder {
+	b.config.Schema = schema
+	return b
+}
+
 // Build returns the final DBConfig
 func (b *DBConfigBuilder) Build() (*DBConfig, error) {
 	if b.config.Driver == "" {
@@ -118,6 +124,9 @@ func (b *DBConfigBuilder) Build() (*DBConfig, error) {
 	}
 	if b.config.Database == "" {
 		return nil, fmt.Errorf("database name is required")
+	}
+	if b.config.Schema == "" {
+		b.config.Schema = "public"
 	}
 
 	return &b.config, nil

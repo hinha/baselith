@@ -56,16 +56,25 @@ func Run(cmd *cobra.Command, _ []string) {
 		log.Fatal("Database connection parameters are required when not using a config file.")
 	}
 
+	doc, baseDir, err := loadMigrationsXML(Folder.JoinPath("migrations.xml"))
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	log.Printf("Base directory: %s\n", baseDir)
+
 	config, err := persistence.NewDBConfigBuilder().Driver(Driver).Host(Host).Port(Port).Database(Dbname).
 		Username(User).
 		Password(Password).
 		MaxIdleConns(10).
 		MaxOpenConns(100).
+		Schema(Schema).
 		ConnMaxLifetime(time.Hour).Build()
 	if err != nil {
 		log.Fatal("Failed to build config:", err)
 		return
 	}
+	Schema = config.Schema
 
 	factory := persistence.NewConnectorFactory()
 	connect, err := factory.CreateConnector(config)
@@ -94,7 +103,7 @@ func Run(cmd *cobra.Command, _ []string) {
 	}
 
 	// load migrations from XML
-	txMigs, notxMigs, metasTx, metasNoTx, err := loadMigrationsXML("migrations.xml")
+	txMigs, notxMigs, metasTx, metasNoTx, err := readMigrationsXML(doc, baseDir)
 	if err != nil {
 		log.Fatal(err)
 		return

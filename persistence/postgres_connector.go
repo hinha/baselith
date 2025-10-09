@@ -6,6 +6,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
 // PostgresConnector implements DBConnector for PostgreSQL database
@@ -52,6 +53,9 @@ func (pc *PostgresConnector) Connect() (*gorm.DB, error) {
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Error),
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: pc.config.Schema,
+		},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL: %v", err)
