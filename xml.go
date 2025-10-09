@@ -7,12 +7,16 @@ import (
 	"gorm.io/gorm"
 )
 
-func loadMigrationsXML(xmlPath string) (tx, noTx []*gormigrate.Migration, metasTx, metasNoTx map[string]Meta, err error) {
+func loadMigrationsXML(xmlPath string) (*xmlMigrations, string, error) {
 	doc, baseDir, err := parseXML(xmlPath)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, "", err
 	}
 
+	return doc, baseDir, nil
+}
+
+func readMigrationsXML(doc *xmlMigrations, baseDir string) (tx, noTx []*gormigrate.Migration, metasTx, metasNoTx map[string]Meta, err error) {
 	metasTx = make(map[string]Meta)
 	metasNoTx = make(map[string]Meta)
 

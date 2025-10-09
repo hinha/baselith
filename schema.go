@@ -22,7 +22,8 @@ type Meta struct {
 }
 
 type xmlMigrations struct {
-	Items []xmlChangelog `xml:"changeLog"`
+	Schema string         `xml:"schema,attr"`
+	Items  []xmlChangelog `xml:"changeLog"`
 }
 
 type xmlChangelog struct {

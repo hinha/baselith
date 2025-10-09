@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<migrations version="1">
+<migrations schema="public_test" version="1">
     <changeLog id="001_create_table_user"
                kind="sql"
                author="martin"
